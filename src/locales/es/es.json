@@ -1,0 +1,22 @@
+{
+  "Sidebar": {
+    "today": "Hoy",
+    "searchPlaces": "Buscar Ciudades",
+    "CityResults": {
+      "searchLocation": "Buscar Ubicación",
+      "search": "Buscar"
+    }
+  },
+  "Main": {
+    "Highlights": {
+      "todaysHighlights": "Destacados de Hoy",
+      "windStatus": "Estado del Viento",
+      "humidity": "Humedad",
+      "visibility": "Visibilidad",
+      "airPressure": "Presión del Aire"
+    }
+  },
+  "Footer": {
+    "createdBy": "Creado Por"
+  }
+}
