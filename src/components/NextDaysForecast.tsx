@@ -1,6 +1,7 @@
 import { TemperatureUnitContext } from '@/contexts/temperatureContext';
-import { FunctionComponent, useContext } from 'react';
+import { FunctionComponent, useContext, memo } from 'react';
 import { getTemperature } from '@/utils/weather';
+import OptimizedImage from '@/components/common/OptimizedImage';
 import { LoadingContext } from '@/contexts/loadingContext';
 import { NextDaysForecastSkeleton } from '@/components/skeletons/NextDaysForecast';
 
@@ -26,13 +27,12 @@ const NextDaysForecast: FunctionComponent<NextDaysForecastProps> = ({
       ) : (
           <div className="p-3">
             {dt}
-            <img
+            <OptimizedImage
               src={`http://openweathermap.org/img/wn/${icon}@4x.png`}
               alt="Weather icon"
               width="150"
               height="150"
               className="m-auto"
-              loading="lazy"
             />
             <div className="flex justify-around">
               <span>
@@ -50,4 +50,4 @@ const NextDaysForecast: FunctionComponent<NextDaysForecastProps> = ({
   );
 };
 
-export default NextDaysForecast;
+export default memo(NextDaysForecast);

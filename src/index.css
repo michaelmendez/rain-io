@@ -1,7 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Raleway&display=swap');
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  /* Font Families */
+  --font-family-raleway: 'Raleway', sans-serif;
+
+  /* Background Colors */
+  --color-primary-color: #1e213a;
+  --color-secondary-color: #100e1d;
+
+  /* Text Colors */
+  --color-primary-gray: #A09FB1;
+  --color-secondary-gray: #E7E7EB;
+  --color-primary-blue: #1e213a;
+  --color-secondary-blue: #100e1d;
+
+  /* Background Images */
+  --background-image-cloud: url('cloud-background.png');
+}
 
 h1,
 h2,
@@ -9,7 +25,18 @@ h3,
 h4,
 h5,
 h6,
-h7,
 p {
   color: #a09fb1;
+}
+
+/* Optimize font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Optimize image loading */
+img {
+  content-visibility: auto;
 }

@@ -1,4 +1,4 @@
-import { FunctionComponent, useContext } from 'react';
+import { FunctionComponent, useContext, memo } from 'react';
 import { LoadingContext } from '@/contexts/loadingContext';
 import { HighlightsSkeleton } from '@/components/skeletons/Highlights';
 
@@ -34,4 +34,4 @@ const Highlights: FunctionComponent<HighlightsProps> = ({
   );
 };
 
-export default Highlights;
+export default memo(Highlights);

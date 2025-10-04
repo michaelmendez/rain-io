@@ -1,4 +1,5 @@
-import { WEATHER_API_KEY, WEATHER_API_URL } from '@/constants/weather';
+import { API_CONFIG, WEATHER_CONFIG, SEARCH_CONFIG, ERROR_MESSAGES } from '@/constants/app';
+import { weatherCache, citySearchCache } from '@/utils/cache';
 import { formatDate } from '@/utils/date';
 
 interface CityResults {
@@ -13,60 +14,119 @@ interface CityResults {
 export const getCurrentWeather = async (
   lat: number,
   lon: number,
-  lang = 'en',
-  units = 'metric'
+  lang: string = WEATHER_CONFIG.DEFAULT_LOCALE,
+  units: 'metric' | 'imperial' = WEATHER_CONFIG.DEFAULT_UNIT,
+  signal?: AbortSignal
 ): Promise<any> => {
-  const response = await fetch(
-    `${WEATHER_API_URL}/data/2.5/weather?lat=${lat}&lon=${lon}&units=${units}&lang=${lang}&appid=${WEATHER_API_KEY}`
-  );
-  const data = await response.json();
-  return data;
-};
+  const cacheKey = `weather_${lat}_${lon}_${units}_${lang}`;
+  const cached = weatherCache.get(cacheKey);
+  if (cached) return cached;
 
-export const getNext3HoursStepForecast = async (
+  try {
+    const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.WEATHER}?lat=${lat}&lon=${lon}&units=${units}&lang=${lang}&appid=${API_CONFIG.KEY}`;
+    const response = await fetch(url, { signal });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    weatherCache.set(cacheKey, data);
+    return data;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.log('Fetch aborted');
+      throw error;
+    }
+    console.error(ERROR_MESSAGES.WEATHER_FETCH_FAILED, error);
+    throw error;
+  }
+};export const getNext3HoursStepForecast = async (
   lat: number,
   lon: number,
-  units = 'metric',
-  numberOfTimestamps = 5
+  units: 'metric' | 'imperial' = WEATHER_CONFIG.DEFAULT_UNIT,
+  numberOfTimestamps: number = WEATHER_CONFIG.FORECAST_TIMESTAMPS,
+  signal?: AbortSignal
 ) => {
-  const response = await fetch(
-    `${WEATHER_API_URL}/data/2.5/forecast?lat=${lat}&lon=${lon}&units=${units}&cnt=${numberOfTimestamps}&appid=${WEATHER_API_KEY}`
-  );
-  const data = await response.json();
-  const nextThreeHoursStepForecast = data?.list?.map((n: any) => ({
-    min: n.main.temp_min,
-    max: n.main.temp_max,
-    icon: n.weather[0].icon,
-    dt: formatDate({
-      date: new Date(n.dt_txt),
-      options: {
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true,
-      },
-    }),
-  }));
+  const cacheKey = `forecast_${lat}_${lon}_${units}_${numberOfTimestamps}`;
+  const cached = weatherCache.get(cacheKey);
+  if (cached) return cached;
 
-  return nextThreeHoursStepForecast;
+  try {
+    const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FORECAST}?lat=${lat}&lon=${lon}&units=${units}&cnt=${numberOfTimestamps}&appid=${API_CONFIG.KEY}`;
+    const response = await fetch(url, { signal });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.list || !Array.isArray(data.list)) {
+      throw new Error(ERROR_MESSAGES.INVALID_RESPONSE);
+    }
+
+    const nextThreeHoursStepForecast = data.list.map((n: any) => ({
+      min: n.main.temp_min,
+      max: n.main.temp_max,
+      icon: n.weather[0].icon,
+      id: n.dt,
+      dt: formatDate({
+        date: new Date(n.dt_txt),
+        options: {
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true,
+        },
+      }),
+    }));
+
+    weatherCache.set(cacheKey, nextThreeHoursStepForecast);
+    return nextThreeHoursStepForecast;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.log('Fetch aborted');
+      throw error;
+    }
+    console.error(ERROR_MESSAGES.FORECAST_FETCH_FAILED, error);
+    throw error;
+  }
 };
 
 export const getCitySearchResults = async (
   city: string,
-  lang = 'es'
+  lang: string = WEATHER_CONFIG.DEFAULT_LOCALE,
+  signal?: AbortSignal
 ): Promise<any> => {
-  let citySearchResults: any[] = [];
+  if (!city || city.trim().length < SEARCH_CONFIG.MIN_SEARCH_LENGTH) {
+    return [];
+  }
+
+  const cacheKey = `city_${city}_${lang}`;
+  const cached = citySearchCache.get(cacheKey);
+  if (cached) return cached;
+
   try {
-    const response = await fetch(
-      `${WEATHER_API_URL}/geo/1.0/direct?q=${city}&limit=5&appid=${WEATHER_API_KEY}`
-    );
+    const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GEO_DIRECT}?q=${encodeURIComponent(city)}&limit=${SEARCH_CONFIG.MAX_CITY_RESULTS}&appid=${API_CONFIG.KEY}`;
+    const response = await fetch(url, { signal });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
 
     if (data?.cod) {
       console.error(data?.message);
-      return citySearchResults;
+      return [];
     }
 
-    citySearchResults = data?.map(
+    if (!Array.isArray(data)) {
+      console.error(ERROR_MESSAGES.INVALID_RESPONSE);
+      return [];
+    }
+
+    const citySearchResults = data.map(
       ({
         name,
         local_names: localNames,
@@ -81,9 +141,15 @@ export const getCitySearchResults = async (
         return { lat, lon, displayName };
       }
     );
+
+    citySearchCache.set(cacheKey, citySearchResults);
     return citySearchResults;
   } catch (error) {
-    console.error(error);
-    return citySearchResults;
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.log('Fetch aborted');
+      return [];
+    }
+    console.error(ERROR_MESSAGES.CITY_SEARCH_FAILED, error);
+    return [];
   }
 };

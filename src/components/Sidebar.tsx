@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, memo } from 'react';
 import SearchPlaces from '@/components/SearchPlaces';
 import CurrentWeather from '@/components/CurrentWeather';
 import { Fade } from '@/components/layouts/Fade';
@@ -22,7 +22,6 @@ const Sidebar: FunctionComponent<SidebarProps> = ({
     isSearchLayoutActive ? (
       <Fade id="sidebar" isVisible={isSearchLayoutActive}>
         <SearchPlaces
-          isSearchLayoutActive={isSearchLayoutActive}
           setIsSearchLayoutActive={setIsSearchLayoutActive}
           onCoordinates={onCoordinates}
         />
@@ -38,4 +37,4 @@ const Sidebar: FunctionComponent<SidebarProps> = ({
   );
 };
 
-export default Sidebar;
+export default memo(Sidebar);

@@ -1,4 +1,4 @@
-import { FunctionComponent, useContext } from 'react';
+import { FunctionComponent, useContext, memo } from 'react';
 import Button from '@/components/common/Button';
 import Highlights from '@/components/Highlights';
 import NextDaysForecast from '@/components/NextDaysForecast';
@@ -55,7 +55,7 @@ const Main: FunctionComponent<MainProps> = ({
       <div className="grid md:grid-cols-5 grid-cols-2 text-center gap-10">
         {nextDaysForecast?.map((nextDayForecast: any, index: number) => (
           <NextDaysForecast
-            key={index}
+            key={nextDayForecast?.id || `forecast-${index}`}
             dt={nextDayForecast?.dt}
             min={nextDayForecast?.min}
             max={nextDayForecast?.max}
@@ -105,4 +105,4 @@ const Main: FunctionComponent<MainProps> = ({
   );
 };
 
-export default Main;
+export default memo(Main);

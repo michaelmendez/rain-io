@@ -1,7 +1,8 @@
 import { formatDate } from '@/utils/date';
-import { FunctionComponent, useContext } from 'react';
+import { FunctionComponent, useContext, memo } from 'react';
 import { MdGpsFixed, MdLocationOn } from 'react-icons/md';
 import Button from '@/components/common/Button';
+import OptimizedImage from '@/components/common/OptimizedImage';
 import { TemperatureUnitContext } from '@/contexts/temperatureContext';
 import { getTemperature } from '@/utils/weather';
 import { toast } from 'react-toastify';
@@ -48,7 +49,7 @@ const CurrentWeather: FunctionComponent<CurrentWeatherProps> = ({
           <CurrentWeatherSkeleton />
         ) : (
           <>
-            <img
+            <OptimizedImage
               src={`http://openweathermap.org/img/wn/${currentWeather?.icon}@4x.png`}
               alt="Weather icon"
               width="200"
@@ -84,4 +85,4 @@ const CurrentWeather: FunctionComponent<CurrentWeatherProps> = ({
   );
 };
 
-export default CurrentWeather;
+export default memo(CurrentWeather);

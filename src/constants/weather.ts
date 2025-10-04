@@ -1,2 +1,4 @@
-export const WEATHER_API_URL = 'https://api.openweathermap.org';
-export const WEATHER_API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
+import { API_CONFIG } from '@/constants/app';
+
+export const WEATHER_API_URL = API_CONFIG.BASE_URL;
+export const WEATHER_API_KEY = API_CONFIG.KEY;

@@ -1,10 +1,11 @@
-import { FunctionComponent, SyntheticEvent } from 'react';
+import { FunctionComponent, SyntheticEvent, memo } from 'react';
 
 interface ButtonProps {
   type?: any;
   children: any;
   onClick: Function;
   loading?: boolean;
+  disabled?: boolean;
   className?: string;
   variant?: 'TEXT' | 'CONTAINED' | 'OUTLINED';
 }
@@ -25,23 +26,29 @@ const Button: FunctionComponent<ButtonProps> = ({
   children,
   onClick = noop,
   loading = false,
+  disabled = false,
   className = '',
   variant = 'CONTAINED',
 }) => {
   const handleClick = (e: SyntheticEvent) => {
-    if (!loading) return onClick(e);
+    if (!loading && !disabled) return onClick(e);
     return null;
   };
+
+  const isDisabled = loading || disabled;
+
   return (
     <button
       type={type}
       onClick={handleClick}
-      disabled={loading}
-      className={`${className} ${getVariantClassNames(variant)} text-white p-2 leading-5 transition duration-150 ease-in-out group hover:bg-opacity-90 focus:outline-none`}
+      disabled={isDisabled}
+      className={`${className} ${getVariantClassNames(variant)} text-white p-2 leading-5 transition duration-150 ease-in-out group hover:bg-opacity-90 focus:outline-none ${
+        isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
     >
       {loading ? 'Loading...' : children}
     </button>
   );
 };
 
-export default Button;
+export default memo(Button);
